@@ -19,7 +19,7 @@ namespace dlib
 // ----------------------------------------------------------------------------------------
 
     class tensor;
-    namespace cuda
+    namespace sycl
     {
         void set_tensor (
             tensor& t,
@@ -78,14 +78,14 @@ namespace dlib
 
         tensor& operator= (float val)
         {
-#ifdef DLIB_USE_CUDA
+#ifdef DLIB_USE_SYCL
             // If you are using CUDA then presumably you will be mostly using tensors on
             // the GPU.  So unless you seem to be actively working with the host side's
             // data then we do this initialization on the device side since this avoids a
             // host to device transfer that would likely immediately follow.
             if (data().device_ready())
             {
-                cuda::set_tensor(*this, val);
+                sycl::set_tensor(*this, val);
                 return *this;
             }
 #endif
@@ -98,8 +98,8 @@ namespace dlib
 
         tensor& operator*= (float val)
         {
-#ifdef DLIB_USE_CUDA
-            cuda::scale_tensor(*this, val);
+#ifdef DLIB_USE_SYCL
+            sycl::scale_tensor(*this, val);
             return *this;
 #else
             for (auto& d : *this)
@@ -177,8 +177,8 @@ namespace dlib
         }
 
 
-#ifdef DLIB_USE_CUDA
-        virtual const cuda::tensor_descriptor& get_cudnn_tensor_descriptor (
+#ifdef DLIB_USE_SYCL
+        virtual const sycl::tensor_descriptor& get_cudnn_tensor_descriptor (
         ) const = 0;
 #endif
 
@@ -390,7 +390,7 @@ namespace dlib
             m_size = n_*k_*nr_*nc_;
             if ((long long)data_instance.size() < m_size)
                 data_instance.set_size(m_size);
-#ifdef DLIB_USE_CUDA
+#ifdef DLIB_USE_SYCL
             cudnn_descriptor.set_size(m_n,m_k,m_nr,m_nc);
 #endif
         }
@@ -420,20 +420,20 @@ namespace dlib
             std::swap(m_size, item.m_size);
             std::swap(data_instance, item.data_instance);
             std::swap(_annotation, item._annotation);
-#ifdef DLIB_USE_CUDA
+#ifdef DLIB_USE_SYCL
             std::swap(cudnn_descriptor, item.cudnn_descriptor);
 #endif
         }
 
-#ifdef DLIB_USE_CUDA
-        virtual const cuda::tensor_descriptor& get_cudnn_tensor_descriptor (
+#ifdef DLIB_USE_SYCL
+        virtual const sycl::tensor_descriptor& get_cudnn_tensor_descriptor (
         ) const { return cudnn_descriptor; }
 #endif
 
     private:
 
-#ifdef DLIB_USE_CUDA
-        cuda::tensor_descriptor cudnn_descriptor;
+#ifdef DLIB_USE_SYCL
+        sycl::tensor_descriptor cudnn_descriptor;
 #endif
 
         gpu_data data_instance;
@@ -544,16 +544,16 @@ namespace dlib
         virtual const any&   annotation() const { return *_annotation; }
         virtual any&         annotation() { return *_annotation; }
 
-#ifdef DLIB_USE_CUDA
-        virtual const cuda::tensor_descriptor& get_cudnn_tensor_descriptor (
+#ifdef DLIB_USE_SYCL
+        virtual const sycl::tensor_descriptor& get_cudnn_tensor_descriptor (
         ) const { return *cudnn_descriptor; }
 #endif
     private:
 
         virtual size_t get_alias_offset() const { return data_offset; }
 
-#ifdef DLIB_USE_CUDA
-        std::shared_ptr<cuda::tensor_descriptor> cudnn_descriptor;
+#ifdef DLIB_USE_SYCL
+        std::shared_ptr<sycl::tensor_descriptor> cudnn_descriptor;
 #endif
         gpu_data* data_instance;
         any* _annotation;
@@ -626,7 +626,7 @@ namespace dlib
                 "size(): "<<size() <<"\n"<<
                 "t.size(): "<<t.size() <<"\n");
 
-#ifdef DLIB_USE_CUDA
+#ifdef DLIB_USE_SYCL
             if (!inst.cudnn_descriptor)
             {
                 inst.cudnn_descriptor = std::make_shared<cuda::tensor_descriptor>();

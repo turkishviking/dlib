@@ -948,11 +948,6 @@ if (COMMAND pybind11_add_module)
    set_target_properties(dlib PROPERTIES CUDA_VISIBILITY_PRESET "hidden")
 endif()
 
-if (DLIB_USE_SYCL)
-    add_sycl_to_target(
-      TARGET ${PROJECT_NAME}
-      SOURCES ${SYCL_SRC}
-    )
-endif()
+
 
 add_library(dlib::dlib ALIAS dlib)
