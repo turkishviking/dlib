@@ -233,7 +233,6 @@ if (NOT TARGET dlib)
    #toggle_preprocessor_switch(DLIB_USE_FFTW)
    toggle_preprocessor_switch(DLIB_USE_MKL_FFT)
 
-
    set(source_files 
       base64/base64_kernel_1.cpp
       bigint/bigint_kernel_1.cpp
@@ -588,6 +587,29 @@ if (NOT TARGET dlib)
          endif()
       endif()
 
+      if(DLIB_USE_SYCL)
+        message(STATUS "\n\nTRYING SYCL :) :) !!\n\n")
+
+        list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules)
+
+        find_package(ComputeCpp REQUIRED)
+        find_package (Eigen3 REQUIRED NO_MODULE)
+
+        set(DLIB_USE_CUDA OFF)
+
+
+
+        set(source_files ${source_files}
+           sycl/sycl_dlib.cpp
+           sycl/tensor_tools.cpp
+           )
+
+        set(SYCL_SRC ${source_files})
+        set(dlib_needed_libraries ${dlib_needed_libraries}
+           Eigen3::Eigen
+           )
+      endif()
+
 
       if (DLIB_USE_CUDA)
          find_package(CUDA 7.5)
@@ -924,6 +946,13 @@ if (COMMAND pybind11_add_module)
    # Don't export unnecessary symbols.
    set_target_properties(dlib PROPERTIES CXX_VISIBILITY_PRESET "hidden")
    set_target_properties(dlib PROPERTIES CUDA_VISIBILITY_PRESET "hidden")
+endif()
+
+if (DLIB_USE_SYCL)
+    add_sycl_to_target(
+      TARGET ${PROJECT_NAME}
+      SOURCES ${SYCL_SRC}
+    )
 endif()
 
 add_library(dlib::dlib ALIAS dlib)
