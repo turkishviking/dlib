@@ -16,24 +16,20 @@ namespace dlib
             int dev
         )
         {
-            auto devices = Eigen::get_sycl_supported_devices();
-            const auto device_selector = *devices[dev];
-            queueInterface(device_selector);
-            currentDeviceIdx = dev;
-            sycl_device = Eigen::SyclDevice(&queueInterface);
+            sycl_device::get()->set_device(dev);
         }
 
         int get_device (
         )
         {
-            return currentDeviceIdx;
+            return sycl_device::get()->get_device_idx();
         }
 
         std::string get_device_name (
             int device
         )
         {
-            return (cl::sycl::device)(sycl_device).get_info<cl::sycl::info::device::name>();
+            return sycl_device::get()->get_device_name(device);
         }
 
         void set_current_device_blocking_sync(
@@ -46,7 +42,7 @@ namespace dlib
         int get_num_devices (
         )
         {
-            return Eigen::get_sycl_supported_devices().size();
+            return sycl_device::get()->get_num_devices();
         }
 
         bool can_access_peer (int device_id, int peer_device_id)

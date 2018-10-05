@@ -588,23 +588,32 @@ if (NOT TARGET dlib)
       endif()
 
       if(DLIB_USE_SYCL)
-        message(STATUS "\n\nTRYING SYCL :) :) !!\n\n")
-
         list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules)
-
+        message(STATUS "\nSearching ComputeCpp")
         find_package(ComputeCpp REQUIRED)
+        message(STATUS "\nSearching Eigen3")
         find_package (Eigen3 REQUIRED NO_MODULE)
 
         set(DLIB_USE_CUDA OFF)
+
+        message(STATUS "\n****************************")
+        message(STATUS "*** DLIB WILL USE SYCL. ***")
+        message(STATUS "****************************\n")
+
 
 
 
         set(source_files ${source_files}
            sycl/sycl_dlib.cpp
            sycl/tensor_tools.cpp
+           sycl/sycl_device.cpp
            )
 
-        set(SYCL_SRC ${source_files})
+        set(SYCL_SRC
+            ${CMAKE_CURRENT_SOURCE_DIR}/sycl/sycl_dlib.cpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/sycl/tensor_tools.cpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/sycl/sycl_device.cpp
+            )
         set(dlib_needed_libraries ${dlib_needed_libraries}
            Eigen3::Eigen
            )
@@ -612,6 +621,7 @@ if (NOT TARGET dlib)
 
 
       if (DLIB_USE_CUDA)
+          message("\n\nBITE\n\n")
          find_package(CUDA 7.5)
 
          if (CUDA_VERSION VERSION_GREATER 9.1 AND CMAKE_VERSION VERSION_LESS 3.12.2)
@@ -951,3 +961,8 @@ endif()
 
 
 add_library(dlib::dlib ALIAS dlib)
+
+add_sycl_to_target(
+  TARGET dlib
+  SOURCES ${SYCL_SRC}
+)

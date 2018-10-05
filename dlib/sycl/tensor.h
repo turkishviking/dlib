@@ -79,7 +79,7 @@ namespace dlib
         tensor& operator= (float val)
         {
 #ifdef DLIB_USE_SYCL
-            // If you are using CUDA then presumably you will be mostly using tensors on
+            // If you are using SYCL then presumably you will be mostly using tensors on
             // the GPU.  So unless you seem to be actively working with the host side's
             // data then we do this initialization on the device side since this avoids a
             // host to device transfer that would likely immediately follow.

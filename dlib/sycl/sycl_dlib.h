@@ -5,6 +5,7 @@
 #define EIGEN_USE_SYCL
 #include <CL/sycl.hpp>
 #include <eigen3/unsupported/Eigen/CXX11/Tensor>
+#include "sycl_device.h"
 
 #include "tensor.h"
 #include "../geometry/rectangle.h"
@@ -15,10 +16,6 @@ namespace dlib
     {
 
     // ----------------------------------------------------------------------------------------
-
-        int currentDeviceIdx = 0;
-        Eigen::SyclDevice sycl_device;
-        Eigen::QueueInterface queueInterface;
 
         void set_device (
             int dev
